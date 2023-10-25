@@ -1,5 +1,3 @@
-# __________________________________________________ VPC __________________________________________________
-
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
@@ -15,6 +13,6 @@ module "vpc" {
 
   tags = {
     Terraform   = "true"
-    Environment = "prod"
+    Environment = "dev"
   }
 }
