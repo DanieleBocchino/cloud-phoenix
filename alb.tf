@@ -19,8 +19,8 @@ resource "aws_security_group" "alb_sg" {
   }
 }
 
-resource "aws_lb" "my_alb" {
-  name               = "my-alb"
+resource "aws_lb" "phoenix_alb" {
+  name               = "phoenix-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
@@ -38,7 +38,7 @@ resource "aws_lb_target_group" "my_target_group" {
 }
 
 resource "aws_lb_listener" "my_listener" {
-  load_balancer_arn = aws_lb.my_alb.arn
+  load_balancer_arn = aws_lb.phoenix_alb.arn
   port              = 80
   protocol          = "HTTP"
 
