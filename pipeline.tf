@@ -1,3 +1,6 @@
+
+
+
 # S3 Bucket for CodePipeline artifacts
 resource "aws_s3_bucket" "codepipeline_bucket" {
   bucket = "phoenix-codepipeline-bucket"
@@ -45,24 +48,6 @@ resource "aws_codebuild_project" "phoenix_codebuild" {
   }
 }
 
-# IAM Role for CodeBuild
-resource "aws_iam_role" "codebuild_role" {
-  name = "codebuild-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = "sts:AssumeRole",
-        Effect = "Allow",
-        Principal = {
-          Service = "codebuild.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
 # CodePipeline
 resource "aws_codepipeline" "phoenix_codepipeline" {
   name     = "phoenix-pipeline"
@@ -88,7 +73,7 @@ resource "aws_codepipeline" "phoenix_codepipeline" {
         Owner      = "DanieleBocchino"
         Repo       = "cloud-phoenix"
         Branch     = "master"                
-        OAuthToken = var.github_oauthtoken # Definisci questa variabile nel tuo file variables.tf o passala come variabile d'ambiente
+        OAuthToken = var.github_oauthtoken 
       }
     }
   }
@@ -131,6 +116,26 @@ resource "aws_codepipeline" "phoenix_codepipeline" {
   }
 }
 
+# __ POLICY __
+
+# IAM Role for CodeBuild
+resource "aws_iam_role" "codebuild_role" {
+  name = "codebuild-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "codebuild.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
 # IAM Role for CodePipeline
 resource "aws_iam_role" "codepipeline_role" {
   name = "codepipeline-role"
@@ -148,6 +153,39 @@ resource "aws_iam_role" "codepipeline_role" {
     ]
   })
 }
+resource "aws_iam_role_policy" "codebuild_policy" {
+  role = "${aws_iam_role.codebuild_role.name}"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = "*"
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]  
+  })
+}
+
+resource "aws_iam_role_policy" "codepipeline_policy" {
+  role = "${aws_iam_role.codepipeline_role.name}"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = "*"
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]  
+  })
+}
+
+
+/* 
+
 
 resource "aws_iam_policy" "codepipeline_codecommit_policy" {
   name        = "codepipeline-codecommit-access"
@@ -175,3 +213,108 @@ resource "aws_iam_role_policy_attachment" "codepipeline_codecommit_policy_attach
   role       = aws_iam_role.codepipeline_role.name
   policy_arn = aws_iam_policy.codepipeline_codecommit_policy.arn
 }
+
+
+resource "aws_iam_policy" "codepipeline_s3_access" {
+  name        = "codepipeline-s3-access"
+  description = "Policy to allow CodePipeline to access S3"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ],
+        Resource = [
+          "arn:aws:s3:::phoenix-codepipeline-bucket",
+          "arn:aws:s3:::phoenix-codepipeline-bucket/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "codepipeline_s3_access_attach" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = aws_iam_policy.codepipeline_s3_access.arn
+}
+
+
+resource "aws_iam_policy" "codepipeline_codebuild_startbuild" {
+  name        = "codepipeline-codebuild-startbuild"
+  description = "Policy to allow CodePipeline to start a CodeBuild"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "codebuild:StartBuild"
+        ],
+        Resource = [
+          "arn:aws:codebuild:us-east-1:324807847207:project/phoenix-build"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "codepipeline_codebuild_startbuild_attach" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = aws_iam_policy.codepipeline_codebuild_startbuild.arn
+}
+
+
+resource "aws_iam_policy" "codepipeline_extended_permissions" {
+  name        = "codepipeline-extended-permissions"
+  description = "Extended permissions for CodePipeline"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "codebuild:StartBuild",
+          "codebuild:BatchGetBuilds"
+        ],
+        Resource = [
+          "arn:aws:codebuild:us-east-1:324807847207:project/phoenix-build"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "codepipeline_extended_permissions_attach" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = aws_iam_policy.codepipeline_extended_permissions.arn
+}
+
+
+resource "aws_iam_policy" "codepipeline_full_ecs_permissions" {
+  name        = "codepipeline-full-ecs-permissions"
+  description = "Full permissions for ECS in CodePipeline"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = "ecs:*",
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "codepipeline_full_ecs_permissions_attach" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = aws_iam_policy.codepipeline_full_ecs_permissions.arn
+}
+ */

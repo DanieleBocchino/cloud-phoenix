@@ -1,3 +1,8 @@
+# ECS Cluster
+resource "aws_ecs_cluster" "phoenix_cluster" {
+  name = "phoenix-cluster"
+}
+
 # ECS Task Definition
 resource "aws_ecs_task_definition" "phoenix_task" {
   family                   = "phoenix-service"
@@ -17,7 +22,7 @@ resource "aws_ecs_task_definition" "phoenix_task" {
     environment = [
       {
         name  = "PORT",
-        value = "80"
+        value = "3000"
       },
       {
         name  = "DB_CONNECTION_STRING",
@@ -27,10 +32,6 @@ resource "aws_ecs_task_definition" "phoenix_task" {
   }])
 }
 
-# ECS Cluster
-resource "aws_ecs_cluster" "phoenix_cluster" {
-  name = "phoenix-cluster"
-}
 
 # ECS Service
 resource "aws_ecs_service" "phoenix_service" {

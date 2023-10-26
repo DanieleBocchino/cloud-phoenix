@@ -22,20 +22,3 @@ output "ecr_url" {
   description = "The URL of the ECR repository"
 }
 
-/* 
-resource "null_resource" "build_and_push_docker_image" {
-
-  triggers = {
-    always_run = "${timestamp()}"
-  }
-
-  provisioner "local-exec" {
-    command     = "./build_and_push_docker_image.sh"
-    interpreter = ["/bin/bash", "-c"]
-
-    environment = {
-      AWS_DEFAULT_REGION = var.aws_region
-      ECR_URL            = aws_ecr_repository.phoenix_repository.repository_url
-    }
-  }
-} */
