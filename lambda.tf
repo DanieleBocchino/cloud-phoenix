@@ -1,11 +1,8 @@
-
-
-
 resource "aws_lambda_function" "ecs_restart_lambda" {
-  function_name = "ecsRestartLambda"
-  role          = aws_iam_role.lambda_execution_role.arn
-  handler       = "lambda_function.lambda_handler"
-  filename      = "lambda/lambda_crash_reboot.zip"
+  function_name    = "ecsRestartLambda"
+  role             = aws_iam_role.lambda_execution_role.arn
+  handler          = "lambda_function.lambda_handler"
+  filename         = "lambda/lambda_crash_reboot.zip"
   source_code_hash = filebase64sha256("lambda/lambda_crash_reboot.zip")
 
   runtime = "python3.9"

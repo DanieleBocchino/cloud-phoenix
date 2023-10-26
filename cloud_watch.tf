@@ -66,3 +66,18 @@ resource "aws_cloudwatch_metric_alarm" "ecs_service_alarm" {
     ServiceName = aws_ecs_service.phoenix_service.name
   }
 }
+
+resource "aws_cloudwatch_metric_alarm" "high_request_rate" {
+  alarm_name          = "high-request-rate"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "YourCustomRequestMetric"
+  namespace           = "YourCustomNamespace"
+  period              = "60"
+  statistic           = "SampleCount"
+  threshold           = "100"
+  alarm_description   = "This metric triggers when there are more than 100 requests per minute."
+  alarm_actions       = [aws_appautoscaling_policy.scale_up_policy.arn]
+}
+
+
