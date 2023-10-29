@@ -220,7 +220,7 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
 
 
 
-#_______________ log
+#_______________ log ______________
 
 resource "aws_cloudwatch_log_group" "codepipeline_log_group" {
   name              = "awslogs-codepipeline"
