@@ -13,8 +13,10 @@ provider "aws" {
 
 resource "aws_ecr_repository" "phoenix_repository" {
   name                 = "phoenix-repository"
-  image_tag_mutability = "MUTABLE"
+  image_tag_mutability = "IMMUTABLE"
 }
+
+
 
 output "ecr_url" {
   value       = aws_ecr_repository.phoenix_repository.repository_url

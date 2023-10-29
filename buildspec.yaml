@@ -4,19 +4,22 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
+      - aws --version
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 324807847207.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t phoenix-app .
-      - docker tag phoenix-app:latest $ECR_URL:latest
+      - docker build -t $ECR_URL:latest .
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
       - docker push $ECR_URL:latest
-      - echo Generating imagedefinitions.json...
+      - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
+      - echo Writing image definitions file...
       - echo '[{"name":"phoenix-container","imageUri":"'$ECR_URL:latest'"}]' > imagedefinitions.json
 artifacts:
   files: imagedefinitions.json
+

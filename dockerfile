@@ -1,15 +1,14 @@
+# Usa l'immagine di Node.js 8.11.1 LTS
 FROM node:8.11.1
 
-WORKDIR /app
+WORKDIR /src/app
 
-RUN git clone https://github.com/claranet-ch/cloud-phoenix-kata.git .
+COPY ./app/package*.json /src/app/
 
 RUN npm install
 
-COPY . .
+COPY ./app/ /src/app/
 
-ENV PORT=3000
-ENV DB_CONNECTION_STRING=mongodb://username:password@host:port/database
+VOLUME ["/src/app"]
 
-CMD ["npm", "start"]
- 
+CMD [ "npm", "start" ]

@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - echo $AWS_DEFAULT_REGION
+      - echo $ACCOUNT_ID
+      - echo "Trying to log in to ECR..."      
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 324807847207.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_NAME=$REPO_NAME     
+      - REPOSITORY_URI=$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$REPO_NAME
+  build:
+    commands:
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_NAME:latest .
+  post_build:
+    commands:
+      - docker push $ECR_URL:latest || (echo "Docker push failed" && exit 1)
+      - printf '[{"name":"golang-container","imageUri":"%s"}]' $ECR_URL:latest > imagedefinitions.json
+
+artifacts:
+  files: imagedefinitions.json

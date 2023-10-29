@@ -16,11 +16,6 @@ resource "aws_sns_topic_subscription" "cpu_alerts_email" {
   endpoint  = var.alert_email
 }
 
-resource "aws_sns_topic_subscription" "lambda_subscription" {
-  topic_arn = aws_sns_topic.service_status.arn
-  protocol  = "lambda"
-  endpoint  = aws_lambda_function.ecs_restart_lambda.arn
-}
 
 # __________________ CloudWatch Log Group _________________________
 
