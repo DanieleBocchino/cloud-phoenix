@@ -1,14 +1,13 @@
-# Usa l'immagine di Node.js 8.11.1 LTS
 FROM node:8.11.1
 
-WORKDIR /src/app
+WORKDIR /app
 
-COPY ./app/package*.json /src/app/
+COPY ./app/package*.json /app/
 
 RUN npm install
 
-COPY ./app/ /src/app/
+COPY ./app/ /app/
 
-VOLUME ["/src/app"]
+EXPOSE 3000
 
-CMD [ "npm", "start" ]
+CMD ["npm", "start"]

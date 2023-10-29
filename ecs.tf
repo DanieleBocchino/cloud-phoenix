@@ -37,7 +37,7 @@ resource "aws_ecs_task_definition" "phoenix_task" {
   container_definitions = jsonencode([{
     name  = "phoenix-container"
     image = "${aws_ecr_repository.phoenix_repository.repository_url}:latest"
-     healthCheck= {
+    healthCheck = {
       command  = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
       interval = 30
       timeout  = 5
@@ -58,14 +58,6 @@ resource "aws_ecs_task_definition" "phoenix_task" {
         value = "mongodb://${var.db_username}:${var.db_password}@mongodb-service:27017/phoenix-mongo-db"
       }
     ]
-    logConfiguration = {
-      logDriver = "awslogs"
-      options = {
-        "awslogs-group" = "awslogs-phoenix"
-        "awslogs-region" = "us-east-1"
-        "awslogs-stream-prefix" = "ecs"
-      }
-    }
   }])
 }
 
@@ -85,6 +77,19 @@ resource "aws_ecs_task_definition" "mongodb_task" {
   container_definitions = jsonencode([{
     name  = "mongodb-container"
     image = "mongo:4.4"
+
+    entryPoint = ["/bin/sh", "-c"]
+    command    = ["mongodump --uri=$DB_CONNECTION_STRING && aws s3 cp /dump s3://phoenix-mongodb-backup-bucket/"]
+
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.mongodb_log_group.name
+        awslogs-region        = var.aws_region
+        awslogs-stream-prefix = "mongodb"
+      }
+    }
+
     portMappings = [{
       containerPort = 27017
       hostPort      = 27017
@@ -175,8 +180,6 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_attachment" {
 
 
 
-
- 
 resource "aws_iam_role" "ecs_task_role" {
   name = "ecs_task_role"
 
@@ -220,7 +223,7 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
 #_______________ log
 
 resource "aws_cloudwatch_log_group" "codepipeline_log_group" {
-  name = "awslogs-codepipeline"
+  name              = "awslogs-codepipeline"
   retention_in_days = 14
 }
 

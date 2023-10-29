@@ -19,10 +19,12 @@ resource "aws_sns_topic_subscription" "cpu_alerts_email" {
 
 # __________________ CloudWatch Log Group _________________________
 
-resource "aws_cloudwatch_log_group" "phoenix_log_group" {
-  name              = "/ecs/phoenix"
+resource "aws_cloudwatch_log_group" "mongodb_log_group" {
+  name              = "mongodb-log-group"
   retention_in_days = 7
 }
+
+
 
 # CloudWatch Alarms
 

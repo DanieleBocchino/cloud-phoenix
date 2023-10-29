@@ -6,9 +6,9 @@ resource "aws_s3_bucket" "codepipeline_bucket" {
 
 
 resource "aws_codecommit_repository" "phoenix_repository" {
-  repository_name = "test-repository"
+  repository_name = "phoenix-commit-repository"
+  description     = "Code repository for the Phoenix application"
 }
-
 
 
 # CodeBuild Project
@@ -16,19 +16,14 @@ resource "aws_codebuild_project" "phoenix_codebuild" {
   name          = "phoenix-build"
   build_timeout = "5"
   service_role  = aws_iam_role.codebuild_role.arn
-   artifacts {
-    type = "NO_ARTIFACTS"
-  }
 
-  source {
-    type            = "GITHUB"
-    location        = var.github_repository_url  
-    git_clone_depth = 1 
+  artifacts {
+    type = "CODEPIPELINE"
   }
 
   environment {
     compute_type    = "BUILD_GENERAL1_SMALL"
-    image           = "aws/codebuild/standard:5.0"
+    image           = "aws/codebuild/standard:4.0"
     type            = "LINUX_CONTAINER"
     privileged_mode = true
 
@@ -40,11 +35,6 @@ resource "aws_codebuild_project" "phoenix_codebuild" {
     environment_variable {
       name  = "ECR_URL"
       value = aws_ecr_repository.phoenix_repository.repository_url
-    }
-
-    environment_variable {
-      name  = "IMAGE_TAG"
-      value = "latest"
     }
 
   }
@@ -61,12 +51,13 @@ resource "aws_codepipeline" "phoenix_codepipeline" {
   role_arn = aws_iam_role.codepipeline_role.arn
 
   artifact_store {
-    location = "${aws_s3_bucket.codepipeline_bucket.bucket}"
+    location = aws_s3_bucket.codepipeline_bucket.bucket
     type     = "S3"
   }
-  # SOURCE
+
   stage {
     name = "Source"
+
     action {
       name             = "SourceAction"
       category         = "Source"
@@ -78,114 +69,71 @@ resource "aws_codepipeline" "phoenix_codepipeline" {
       configuration = {
         Owner      = "DanieleBocchino"
         Repo       = "claranet-finale"
-        Branch     = "master"
-        OAuthToken = var.github_oauthtoken
+        Branch     = "master"                
+        OAuthToken = var.github_oauthtoken 
       }
     }
-  }
+  } 
 
   stage {
     name = "Build"
+
     action {
-      name             = "Build"
+      name             = "BuildAction"
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
-      version          = "1"
       input_artifacts  = ["source_output"]
       output_artifacts = ["build_output"]
+      version          = "1"
 
       configuration = {
         ProjectName = aws_codebuild_project.phoenix_codebuild.name
       }
     }
   }
-  # DEPLOY
+
   stage {
     name = "Deploy"
+
     action {
-      name            = "Deploy"
+      name            = "DeployAction"
       category        = "Deploy"
       owner           = "AWS"
       provider        = "ECS"
-      version         = "1"
       input_artifacts = ["build_output"]
+      version         = "1"
 
       configuration = {
-          ClusterName = aws_ecs_cluster.phoenix_cluster.name
-          ServiceName = aws_ecs_service.phoenix_service.name
-          FileName    = "imagedefinitions.json"
+        ClusterName = aws_ecs_cluster.phoenix_cluster.name
+        ServiceName = aws_ecs_service.phoenix_service.name
+        FileName    = "imagedefinitions.json"
       }
     }
   }
 }
 
+# __ POLICY __
 
-
+# IAM Role for CodeBuild
 resource "aws_iam_role" "codebuild_role" {
   name = "codebuild-role"
+
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [
       {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
         Principal = {
           Service = "codebuild.amazonaws.com"
         }
-      },
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "codebuild_policy" {
-  role = "${aws_iam_role.codebuild_role.name}"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action   = ["codecommit:GitPull"]
-        Effect   = "Allow"
-        Resource = "*"
-      },
-      {
-        Action = [
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage",
-          "ecr:CompleteLayerUpload",
-          "ecr:GetAuthorizationToken",
-          "ecr:InitiateLayerUpload",
-          "ecr:PutImage",
-        "ecr:UploadLayerPart"]
-        Effect   = "Allow"
-        Resource = "*"
-      },
-      {
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-        "logs:PutLogEvents"]
-        Effect   = "Allow"
-        Resource = "*"
-      },
-      {
-        Action = [
-          "s3:PutObject",
-          "s3:GetObject",
-          "s3:GetObjectVersion",
-          "s3:GetBucketAcl",
-        "s3:GetBucketLocation"]
-        Effect   = "Allow"
-        Resource = "*"
       }
     ]
-
-
   })
 }
 
+# IAM Role for CodePipeline
 resource "aws_iam_role" "codepipeline_role" {
   name = "codepipeline-role"
 
@@ -203,7 +151,7 @@ resource "aws_iam_role" "codepipeline_role" {
   })
 }
 resource "aws_iam_role_policy" "codebuild_policy" {
-  role = aws_iam_role.codebuild_role.name
+  role = "${aws_iam_role.codebuild_role.name}"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -213,12 +161,12 @@ resource "aws_iam_role_policy" "codebuild_policy" {
         Effect   = "Allow"
         Resource = "*"
       },
-    ]
+    ]  
   })
 }
 
 resource "aws_iam_role_policy" "codepipeline_policy" {
-  role = aws_iam_role.codepipeline_role.name
+  role = "${aws_iam_role.codepipeline_role.name}"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -228,6 +176,6 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         Effect   = "Allow"
         Resource = "*"
       },
-    ]
+    ]  
   })
 }
