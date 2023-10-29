@@ -15,27 +15,15 @@ variable "github_oauthtoken" {
   default     = ""
 }
 
-variable "github_repository_url" {
-  description = "GitHub repository URL"
-  default     = "https://github.com/DanieleBocchino/claranet-finale.git"
-}
-
 
 variable "alert_email" {
   description = "Email address for CPU utilization alerts"
   type        = string
-  default     = "bocchino.daniele@gmail.com"
+  default     = ""
 }
 
 
-# _______ NODE _______
-
-variable "application_port" {
-  description = "The port the application will listen on"
-  default     = 3000
-}
-
-# _____ Mongo DB _____
+# _____ DOCUMENT DB _____
 
 variable "db_password" {
   description = "The password for the DocumentDB"

@@ -38,6 +38,21 @@ resource "aws_codebuild_project" "phoenix_codebuild" {
       value = aws_ecr_repository.phoenix_repository.repository_url
     }
 
+    environment_variable {
+      name  = "IMAGE_TAG"
+      value = "latest"
+    }
+
+    environment_variable {
+      name  = "REPOSITORY_NAME"
+      value = "phoenix-repository"
+    }
+
+    environment_variable {
+      name  = "AWS_ACCOUNT_ID"
+      value = var.aws_account_id
+    }
+
   }
 
   source {
