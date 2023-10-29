@@ -2,6 +2,7 @@
 resource "aws_s3_bucket" "codepipeline_bucket" {
   bucket = "phoenix-codepipeline-bucket"
   acl    = "private"
+  force_destroy = true
 }
 
 
@@ -68,7 +69,7 @@ resource "aws_codepipeline" "phoenix_codepipeline" {
 
       configuration = {
         Owner      = "DanieleBocchino"
-        Repo       = "claranet-finale"
+        Repo       = "cloud-phoenix"
         Branch     = "master"                
         OAuthToken = var.github_oauthtoken 
       }

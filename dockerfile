@@ -1,13 +1,11 @@
 FROM node:8.11.1
 
-WORKDIR /app
+WORKDIR /src/app
 
-COPY ./app/package*.json /app/
+RUN git clone https://github.com/claranet-ch/cloud-phoenix-kata.git .
 
 RUN npm install
 
-COPY ./app/ /app/
-
-EXPOSE 3000
+COPY . /src/app/
 
 CMD ["npm", "start"]
