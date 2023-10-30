@@ -29,8 +29,9 @@ resource "aws_docdb_subnet_group" "phoenix_subnet_group" {
 }
 
 output "DB_CONNECTION_STRING" {
-  value = "mongodb://${var.db_username}:${var.db_password}@${aws_docdb_cluster.db_phoenix_cluster.endpoint}:${aws_docdb_cluster.db_phoenix_cluster.port}/phoenix-mongo-db"
+  value = "mongodb://${var.db_username}:${var.db_password}@${aws_docdb_cluster.db_phoenix_cluster.endpoint}:${aws_docdb_cluster.db_phoenix_cluster.port}/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
 }
+
 
 output "DB_HOST" {
   value = aws_docdb_cluster.db_phoenix_cluster.endpoint

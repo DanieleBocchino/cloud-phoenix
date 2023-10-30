@@ -3,6 +3,23 @@ resource "aws_ecs_cluster" "phoenix_cluster" {
   name = "phoenix-cluster"
 }
 
+# ECS Service
+resource "aws_ecs_service" "phoenix_service" {
+  name            = "phoenix-service"
+  cluster         = aws_ecs_cluster.phoenix_cluster.id
+  task_definition = aws_ecs_task_definition.phoenix_task.arn
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets         = module.vpc.private_subnets
+    security_groups = [aws_security_group.documentdb_sg.id, aws_security_group.ecs_sg.id]
+  }
+  desired_count = 1
+  load_balancer {
+    target_group_arn = aws_lb_target_group.phoenix_target_group.arn
+    container_name   = "phoenix-container"
+    container_port   = 3000
+  }
+}
 
 # ECS Task Definition
 resource "aws_ecs_task_definition" "phoenix_task" {
@@ -30,7 +47,6 @@ resource "aws_ecs_task_definition" "phoenix_task" {
       }
     }
 
-
     environment = [
       {
         name  = "PORT",
@@ -38,35 +54,11 @@ resource "aws_ecs_task_definition" "phoenix_task" {
       },
       {
         name  = "DB_CONNECTION_STRING",
-        value = "mongodb://${var.db_username}:${var.db_password}@${aws_docdb_cluster.db_phoenix_cluster.endpoint}:${aws_docdb_cluster.db_phoenix_cluster.port}/phoenix-mongo-db"
+        value = "mongodb://${var.db_username}:${var.db_password}@${aws_docdb_cluster.db_phoenix_cluster.endpoint}:${aws_docdb_cluster.db_phoenix_cluster.port}/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
       }
     ]
   }])
 }
-
-
-# ECS Service
-resource "aws_ecs_service" "phoenix_service" {
-  name            = "phoenix-service"
-  cluster         = aws_ecs_cluster.phoenix_cluster.id
-  task_definition = aws_ecs_task_definition.phoenix_task.arn
-  launch_type     = "FARGATE"
-  network_configuration {
-    subnets         = module.vpc.private_subnets
-    security_groups = [aws_security_group.documentdb_sg.id, aws_security_group.ecs_sg.id]
-  }
-  desired_count = 1
-  load_balancer {
-    target_group_arn = aws_lb_target_group.phoenix_target_group.arn
-    container_name   = "phoenix-container"
-    container_port   = 3000
-  }
-}
-
-
-
-
-
 
 # IAM Role for ECS Execution
 resource "aws_iam_role" "ecs_execution_role" {
@@ -96,10 +88,7 @@ resource "aws_iam_policy" "ecs_ecr_policy" {
     Statement = [
       {
         Action = [
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchCheckLayerAvailability",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
+          "*"
         ],
         Effect   = "Allow",
         Resource = "*"
