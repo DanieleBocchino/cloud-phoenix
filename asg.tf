@@ -38,5 +38,4 @@ resource "aws_appautoscaling_policy" "scale_up_policy" {
     }
   }
 
-  depends_on = [aws_cloudwatch_metric_alarm.request_count_alarm]
 }

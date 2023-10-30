@@ -16,7 +16,7 @@ variable "github_oauthtoken" {
 }
 
 
-variable "alert_email" {
+variable "email" {
   description = "Email address for CPU utilization alerts"
   type        = string
   default     = ""

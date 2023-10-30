@@ -41,30 +41,4 @@ output "DB_PORT" {
 }
 
 
-# Security Group for Document DB
-resource "aws_security_group" "documentdb_sg" {
-  name        = "documentdb-sg"
-  description = "Security group for MongoDB cluster"
-  vpc_id      = module.vpc.vpc_id
 
-  ingress {
-    from_port   = 27017
-    to_port     = 27017
-    protocol    = "tcp"
-    security_groups = [aws_security_group.ecs_sg.name]
-    description = "Allow MongoDB traffic"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow all outbound traffic"
-  }
-
-  tags = {
-    Name        = "allow_mongodb_traffic"
-    Environment = "prod"
-  }
-}
