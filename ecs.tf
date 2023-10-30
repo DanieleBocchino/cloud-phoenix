@@ -50,7 +50,7 @@ resource "aws_ecs_task_definition" "phoenix_task" {
     environment = [
       {
         name  = "PORT",
-        value = "3000"
+        value = "27017"
       },
       {
         name  = "DB_CONNECTION_STRING",
