@@ -74,8 +74,8 @@ resource "aws_security_group" "ecs_sg" {
   vpc_id      = module.vpc.vpc_id
 
   ingress {
-    from_port   = 0
-    to_port     = 65535
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = ["10.0.0.0/16"]
     description = "Allow all internal traffic"
@@ -87,6 +87,14 @@ resource "aws_security_group" "ecs_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
     description = "Allow all outbound traffic"
+  }
+
+   egress {
+    from_port   = 27017
+    to_port     = 27017
+    protocol    = "tcp"
+    security_groups = [aws_security_group.documentdb_sg.name]
+    description = "Allow traffic to MongoDB"
   }
 
   tags = {
@@ -115,7 +123,7 @@ resource "aws_iam_role" "ecs_execution_role" {
   })
 }
 
-
+# IAM Policy for ECS
 resource "aws_iam_policy" "ecs_ecr_policy" {
   name        = "ecs-ecr-policy"
   description = "Policy to allow ECS tasks to authenticate to ECR"
@@ -125,8 +133,10 @@ resource "aws_iam_policy" "ecs_ecr_policy" {
     Statement = [
       {
         Action = [
-          "ecr:*"
-
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchCheckLayerAvailability",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
         ],
         Effect   = "Allow",
         Resource = "*"
@@ -139,7 +149,6 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy_attach" {
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = aws_iam_policy.ecs_ecr_policy.arn
 }
-
 
 #LOG GROUP
 
