@@ -17,7 +17,7 @@ resource "aws_ecs_service" "phoenix_service" {
   load_balancer {
     target_group_arn = aws_lb_target_group.phoenix_target_group.arn
     container_name   = "phoenix-container"
-    container_port   = 3000
+    container_port   = var.port
   }
 }
 
@@ -34,8 +34,8 @@ resource "aws_ecs_task_definition" "phoenix_task" {
     name  = "phoenix-container"
     image = "${aws_ecr_repository.phoenix_repository.repository_url}:latest"
     portMappings = [{
-      containerPort = 3000
-      hostPort      = 3000
+      containerPort = var.port
+      hostPort      = var.port
     }]
 
     logConfiguration = {
@@ -48,10 +48,7 @@ resource "aws_ecs_task_definition" "phoenix_task" {
     }
 
     environment = [
-      {
-        name  = "PORT",
-        value = "27017"
-      },
+   
       {
         name  = "DB_CONNECTION_STRING",
         value = "mongodb://${var.db_username}:${var.db_password}@${aws_docdb_cluster.db_phoenix_cluster.endpoint}:${aws_docdb_cluster.db_phoenix_cluster.port}/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"

@@ -11,7 +11,7 @@ resource "aws_lb" "phoenix_alb" {
 
 resource "aws_lb_target_group" "phoenix_target_group" {
   name        = "phoenix-target-group"
-  port        = 3000
+  port        = var.port
   protocol    = "HTTP"
   vpc_id      = module.vpc.vpc_id
   target_type = "ip"

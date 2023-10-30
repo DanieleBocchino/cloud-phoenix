@@ -22,6 +22,12 @@ variable "email" {
   default     = ""
 }
 
+variable "port" {
+  description = "Port for the application"
+  type        = number
+  default     = ""
+}
+
 
 # _____ DOCUMENT DB _____
 
