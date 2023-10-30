@@ -25,7 +25,7 @@ variable "email" {
 variable "port" {
   description = "Port for the application"
   type        = number
-  default     = ""
+  default     = 3000
 }
 
 
