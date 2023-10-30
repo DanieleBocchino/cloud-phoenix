@@ -21,11 +21,11 @@ resource "aws_ecs_task_definition" "phoenix_task" {
       hostPort      = 3000
     }]
 
-     logConfiguration = {
+    logConfiguration = {
       logDriver = "awslogs"
       options = {
-        awslogs-group  = "/ecs/phoenix-service"
-        awslogs-region = "us-east-1"
+        awslogs-group         = "/ecs/phoenix-service"
+        awslogs-region        = "us-east-1"
         awslogs-stream-prefix = "ecs"
       }
     }
@@ -53,7 +53,7 @@ resource "aws_ecs_service" "phoenix_service" {
   launch_type     = "FARGATE"
   network_configuration {
     subnets         = module.vpc.private_subnets
-     security_groups = [aws_security_group.documentdb_sg.id, aws_security_group.ecs_sg.id]
+    security_groups = [aws_security_group.documentdb_sg.id, aws_security_group.ecs_sg.id]
   }
   desired_count = 1
   load_balancer {
@@ -117,6 +117,6 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy_attach" {
 
 resource "aws_cloudwatch_log_group" "phoenix_log_group" {
   name              = "/ecs/phoenix-service"
-  retention_in_days = 7 
+  retention_in_days = 7
 }
 

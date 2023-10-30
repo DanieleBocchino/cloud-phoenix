@@ -1,16 +1,9 @@
 # S3 Bucket for CodePipeline artifacts
 resource "aws_s3_bucket" "codepipeline_bucket" {
-  bucket = "phoenix-codepipeline-bucket"
-  acl    = "private"
+  bucket        = "phoenix-codepipeline-bucket"
+  acl           = "private"
   force_destroy = true
 }
-
-
-resource "aws_codecommit_repository" "phoenix_repository" {
-  repository_name = "phoenix-commit-repository"
-  description     = "Code repository for the Phoenix application"
-}
-
 
 # CodeBuild Project
 resource "aws_codebuild_project" "phoenix_codebuild" {
@@ -85,11 +78,11 @@ resource "aws_codepipeline" "phoenix_codepipeline" {
       configuration = {
         Owner      = "DanieleBocchino"
         Repo       = "cloud-phoenix"
-        Branch     = "master"                
-        OAuthToken = var.github_oauthtoken 
+        Branch     = "master"
+        OAuthToken = var.github_oauthtoken
       }
     }
-  } 
+  }
 
   stage {
     name = "Build"
@@ -173,7 +166,7 @@ resource "aws_iam_role_policy" "codebuild_policy" {
 
   policy = jsonencode({
     Version = "2012-10-17",
-   Statement = [
+    Statement = [
       {
         Action   = ["codecommit:GitPull"]
         Effect   = "Allow"
@@ -226,7 +219,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
           "codebuild:BatchGetBuilds",
           "codebuild:StartBuild"
         ],
-        Effect = "Allow",
+        Effect   = "Allow",
         Resource = "*"
       },
       {
@@ -235,16 +228,14 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
           "s3:GetObjectVersion",
           "s3:PutObject"
         ],
-        Effect = "Allow",
+        Effect   = "Allow",
         Resource = "*"
       },
       {
         Action = [
-          "ecs:DescribeServices",
-          "ecs:UpdateService",
-          "ecs:RegisterTaskDefinition"
+          "ecs:*"
         ],
-        Effect = "Allow",
+        Effect   = "Allow",
         Resource = "*"
       }
     ]

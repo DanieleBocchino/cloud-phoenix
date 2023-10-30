@@ -27,7 +27,7 @@ resource "aws_security_group" "documentdb_sg" {
 
 # ____ Security Group ____
 
-  # Security Group for ECS
+# Security Group for ECS
 resource "aws_security_group" "ecs_sg" {
   name        = "ecs-sg"
   description = "Security group for ECS services"
@@ -63,16 +63,16 @@ resource "aws_security_group_rule" "ecs_to_docdb" {
   to_port           = 27017
   protocol          = "tcp"
   security_group_id = aws_security_group.ecs_sg.id
-  cidr_blocks       = ["0.0.0.0/0"]  # Sostituisci con l'effettivo blocco CIDR, se necessario
+  cidr_blocks       = ["0.0.0.0/0"] # Sostituisci con l'effettivo blocco CIDR, se necessario
 }
 
 
 resource "aws_security_group_rule" "docdb_to_ecs" {
-  type              = "ingress"
-  from_port         = 27017
-  to_port           = 27017
-  protocol          = "tcp"
-  security_group_id = aws_security_group.documentdb_sg.id
+  type                     = "ingress"
+  from_port                = 27017
+  to_port                  = 27017
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.documentdb_sg.id
   source_security_group_id = aws_security_group.ecs_sg.id
 }
 

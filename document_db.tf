@@ -9,7 +9,7 @@ resource "aws_docdb_cluster" "db_phoenix_cluster" {
   skip_final_snapshot     = true
   vpc_security_group_ids  = [aws_security_group.documentdb_sg.id]
   backup_retention_period = 7
-    port                    = 27017
+  port                    = 27017
 
 }
 
