@@ -227,7 +227,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
           "codebuild:StartBuild"
         ],
         Effect = "Allow",
-        Resource = aws_codebuild_project.phoenix_codebuild.arn
+        Resource = "*"
       },
       {
         Action = [
@@ -236,7 +236,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
           "s3:PutObject"
         ],
         Effect = "Allow",
-        Resource = aws_s3_bucket.codepipeline_bucket.arn
+        Resource = "*"
       },
       {
         Action = [
