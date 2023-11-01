@@ -40,3 +40,8 @@ variable "db_username" {
   description = "The username for the DocumentDB"
   default     = ""
 }
+
+variable "db_name" {
+  description = "The name of the DocumentDB"
+  default     = ""
+}

@@ -48,10 +48,10 @@ resource "aws_ecs_task_definition" "phoenix_task" {
     }
 
     environment = [
-   
+
       {
         name  = "DB_CONNECTION_STRING",
-        value = "mongodb://${var.db_username}:${var.db_password}@${aws_docdb_cluster.db_phoenix_cluster.endpoint}:${aws_docdb_cluster.db_phoenix_cluster.port}/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
+        value = "mongodb://${var.db_username}:${var.db_password}@${aws_docdb_cluster.db_phoenix_cluster.endpoint}:${aws_docdb_cluster.db_phoenix_cluster.port}/${var.db_name}?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
       }
     ]
   }])
